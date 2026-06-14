@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Сладкий рай | Премиальные сладости ручной работы</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="container header-flex">
+        <div class="logo" id="logoLink">
+            <div class="logo-icon">
+                <img src="images/logo/logo.png" alt="logo" onerror="this.src='images/logo/logo-placeholder.png'">
+            </div>
+            <div class="logo-text">
+                <h1>Сладкий рай</h1>
+                <span>кондитерский дом</span>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <button class="nav-link" id="homeNavBtn">Главная</button>
+            <button class="nav-link" id="catalogNavBtn">Каталог</button>
+            <button class="nav-link" id="deliveryNavBtn">Доставка и оплата</button>
+            <button class="nav-link" id="aboutNavBtn">О компании</button>
+            <button class="nav-link" id="adminNavBtn" style="display: none;">Админ</button>
+        </nav>
+
+        <div class="header-actions">
+            <div class="search-area">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Поиск...">
+                </div>
+                <div id="autocompleteList"></div>
+            </div>
+
+            <button class="cart-icon" id="cartNavBtn">
+                <i class="fas fa-shopping-basket"></i>
+                <span id="cartCounterHeader">0</span>
+            </button>
+
+            <div id="authSection"></div>
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- Мобильная строка поиска -->
+<div class="mobile-search-row">
+    <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" id="mobileSearchInput" placeholder="Поиск сладостей...">
+    </div>
+    <div id="mobileAutocompleteList" class="autocomplete-list-mobile"></div>
+</div>
+
+<!-- Главная страница -->
+<div id="homePage" class="page">
+    <div class="container">
+        <div class="hero-half">
+            <div class="hero-content-center">
+                <h1>Натуральные сладости ручной работы с доставкой за 2 часа</h1>
+                <p>Подарочная упаковка бесплатно при заказе от 2500 рублей</p>
+                <button class="hero-btn-large" id="goToCatalogBtn">Выбрать подарок</button>
+            </div>
+        </div>
+        
+        <div class="features-row">
+            <div class="feature-item">
+                <i class="fas fa-crown"></i>
+                <span>Ручная работа</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-leaf"></i>
+                <span>Натуральные продукты</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-truck-fast"></i>
+                <span>Доставка за 2 часа</span>
+            </div>
+        </div>
+
+        <div class="promo-banner">
+            <p>При заказе от 3000 рублей — стильная подарочная упаковка в подарок</p>
+        </div>
+
+        <div class="section-header">
+            <h2>Категории товаров</h2>
+        </div>
+        <div class="categories-grid" id="homeCategoriesGrid"></div>
+
+        <div class="section-header">
+            <h2>Хиты продаж</h2>
+            <div style="display: flex; gap: 8px;">
+                <button class="scroll-btn-left"><i class="fas fa-chevron-left"></i></button>
+                <button class="scroll-btn-right"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+        <div class="scroll-container">
+            <div class="scroll-wrapper" id="popularScroll">
+                <div class="popular-grid" id="popularGrid"></div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Новинки</h2>
+        </div>
+        <div class="products-grid" id="newProductsGrid"></div>
+
+        <div class="about-company-section" id="aboutCompanySection">
+            <div class="about-company-content">
+                <div class="about-text">
+                    <h3>Сладкий рай с 2015 года</h3>
+                    <p>Более 5000 сладких подарков по всей России. Только натуральные ингредиенты и любовь к своему делу.</p>
+                    <p>Мы не используем искусственные красители и консерванты. Только бельгийский шоколад, свежие фрукты и сливочное масло высшего качества.</p>
+                    <button class="about-more-btn" id="aboutMoreBtn">Подробнее о компании</button>
+                </div>
+                <div class="about-image">
+                    <img src="images/banners/about-section.jpg" alt="Наши сладости" onerror="this.src='images/banners/about-placeholder.jpg'">
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Страница каталога -->
+<div id="catalogPage" class="catalog-page page" style="display: none;">
+    <div class="container">
+        <div class="catalog-layout">
+            <aside class="filters-sidebar">
+                <div class="filter-sidebar-title">
+                    <span>Фильтры</span>
+                    <span class="reset-filters-side" id="resetFiltersSide">Сбросить всё</span>
+                </div>
+                
+                <div class="filter-group-side">
+                    <div class="filter-label">Цена</div>
+                    <div class="price-range-wrapper">
+                        <div class="range-slider">
+                            <div class="range-fill" id="rangeFill"></div>
+                        </div>
+                        <div class="range-input">
+                            <input type="range" id="priceMinSlider" min="0" max="5000" step="100" value="0">
+                            <input type="range" id="priceMaxSlider" min="0" max="5000" step="100" value="5000">
+                        </div>
+                    </div>
+                    <div class="price-labels">
+                        <span id="minPriceVal">0</span>
+                        <span id="maxPriceVal">5000</span>
+                    </div>
+                </div>
+                
+                <div class="filter-group-side">
+                    <div class="filter-label">Особенности</div>
+                    <div class="filter-simple-buttons" id="simpleFilterButtons"></div>
+                </div>
+                <div class="active-filters-side" id="activeFiltersSide"></div>
+            </aside>
+            <div class="products-area">
+                <div class="categories-row" id="categoriesContainer"></div>
+                <div class="sort-bar">
+                    <select id="sortSelect" class="sort-select">
+                        <option value="default">По умолчанию</option>
+                        <option value="price_asc">Сначала дешевле</option>
+                        <option value="price_desc">Сначала дороже</option>
+                    </select>
+                </div>
+                <div id="productsContainer" class="products-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Страница корзины -->
+<div id="cartPage" class="cart-page page" style="display: none;">
+    <div class="container-cart">
+        <div class="back-link" id="backFromCart">Вернуться в каталог</div>
+        <h2>Корзина</h2>
+        <div id="cartItemsList"></div>
+        <div id="cartTotalBlock" class="cart-total"></div>
+        <div class="checkout-form" id="checkoutForm">
+            <h3>Оформление заказа</h3>
+            <div class="form-group">
+                <input type="text" id="orderName" placeholder="Имя">
+            </div>
+            <div class="form-group">
+               <input type="tel" id="orderPhone" placeholder="+7 (___) ___-__-__" class="phone-mask-input">
+            </div>
+            <div class="form-group" id="addressGroup">
+                <input type="text" id="orderAddress" placeholder="Адрес доставки">
+            </div>
+            <div class="form-group">
+                <textarea id="orderComment" rows="2" placeholder="Комментарий"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="payment-label">Способ оплаты</label>
+                <div class="payment-methods">
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="card" checked>
+                        <i class="fas fa-credit-card"></i>
+                        <span>Банковская карта</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="cash">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Наличными</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Выпадающий список для наличных -->
+            <div class="form-group" id="deliverySelectGroup" style="display: none;">
+                <label class="payment-label">Способ получения</label>
+                <select id="deliverySelect" class="delivery-select">
+                    <option value="courier">Курьером</option>
+                    <option value="pickup">Самовывоз</option>
+                </select>
+            </div>
+
+            <!-- Информация о самовывозе -->
+            <div id="pickupInfo" class="pickup-info" style="display: none;">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                    <strong>Адрес самовывоза:</strong><br>
+                    г. Москва, ул. Сладкая, 15<br>
+                    (метро "Сладкая", выход №3, 5 минут пешком)<br>
+                    <strong>Режим работы:</strong> ежедневно с 10:00 до 21:00
+                </div>
+            </div>
+
+            <!-- Форма оплаты картой -->
+            <div id="cardPaymentForm" class="card-payment-form">
+                <div class="form-group">
+                    <input type="text" id="cardNumber" placeholder="Номер карты (16 цифр)" maxlength="19">
+                </div>
+                <div class="form-row-small">
+                    <div class="form-group">
+                        <input type="text" id="cardExpiry" placeholder="ММ/ГГ" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="cardCvv" placeholder="CVV" maxlength="3">
+                    </div>
+                </div>
+            </div>
+            <button id="submitOrderBtn" class="submit-order-btn">Подтвердить заказ</button>
+        </div>
+    </div>
+</div>
+
+<!-- Страница о компании -->
+<div id="aboutPage" class="info-page page" style="display: none;">
+    <div class="container">
+        <div class="info-page-content">
+            <h2>О компании «Сладкий рай»</h2>
+            
+            <div class="trust-highlights">
+                <div class="highlight-mini"><i class="far fa-calendar-alt"></i> <span>Основаны в <strong>2015 году</strong></span></div>
+                <div class="highlight-mini"><i class="fas fa-smile"></i> <span><strong>15 000+</strong> довольных клиентов</span></div>
+                <div class="highlight-mini"><i class="fas fa-clock"></i> <span>Доставка за <strong>2 часа</strong></span></div>
+                <div class="highlight-mini"><i class="fas fa-trophy"></i> <span><strong>12 наград</strong> «Лучший кондитер»</span></div>
+            </div>
+
+            <div class="info-page-inner">
+                <p><strong>Сладкий рай</strong> — это кондитерский дом, основанный в 2015 году. Мы специализируемся на создании премиальных сладостей ручной работы из натуральных ингредиентов. За это время мы приготовили более <strong>50 000 уникальных десертов</strong> и получили доверие тысяч людей по всей России.</p>
+                
+                <p>Наша миссия — дарить радость через вкус. Каждое изделие — это результат кропотливого труда наших кондитеров, которые вкладывают душу в каждую конфету, пирожное и десерт. <strong>98% наших клиентов возвращаются к нам снова</strong> — и это лучшая награда.</p>
+                
+                <div class="inline-fact">
+                    <i class="fas fa-chart-line"></i> 
+                    <strong>Факт:</strong> Ежемесячно мы выполняем более 5 000 заказов, а средний рейтинг на независимых площадках — <strong>4.9 из 5</strong> на основе 4 500+ оценок.
+                </div>
+
+                <p>Мы используем только лучшие продукты: бельгийский шоколад (какао-масло не менее 32%), сливочное масло высшего качества (82,5%), свежие фермерские фрукты и ягоды. Никаких искусственных красителей, ароматизаторов и консервантов.</p>
+                
+                <div style="margin: 28px 0 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+                        <span class="award-badge"><i class="fas fa-medal"></i> «Лучший кондитер Москвы 2023»</span>
+                        <span class="award-badge"><i class="fas fa-star"></i> «Золотой стандарт вкуса 2024»</span>
+                        <span class="award-badge"><i class="fas fa-award"></i> «Народная марка 2025»</span>
+                        <span class="review-badge"><i class="fas fa-comment-dots"></i> 4.9 ★ на основе 4500+ отзывов</span>
+                    </div>
+                </div>
+
+                <p>Наша продукция сертифицирована и соответствует самым высоким стандартам качества. Мы гордимся тем, что нас выбирают как обычные покупатели, так и крупные компании для корпоративных подарков.</p>
+                
+                <div class="stats-mini-row">
+                    <div class="stat-mini-card">
+                        <div class="stat-number">2015</div>
+                        <div class="stat-label">год основания</div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">профессионалов</div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">профессиональных наград</div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">положительных отзывов</div>
+                    </div>
+                </div>
+                
+                <p>Присоединяйтесь к числу наших довольных клиентов и откройте для себя настоящий райский вкус! Попробуйте наши новинки — и вы поймёте, почему нас выбирают тысячи людей каждый день.</p>
+            </div>
+            
+            <div style="background: #fff; border-radius: 24px; padding: 20px; margin-top: 24px; text-align: center; border: 1px solid var(--border);">
+                <i class="fas fa-shield-alt" style="font-size: 1.8rem; color: var(--caramel); margin-bottom: 8px;"></i>
+                <h3 style="color: var(--chocolate); font-size: 1.2rem;">Гарантия качества и свежести</h3>
+                <p style="color: var(--chocolate-light); font-size: 0.85rem;">Мы уверены в своей продукции: если вам что-то не понравится — вернём деньги или заменим заказ.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Страница доставки и оплаты -->
+<div id="deliveryPage" class="info-page page" style="display: none;">
+    <div class="container">
+        <div class="info-page-content">
+            <h2>Доставка и оплата</h2>
+            <div class="info-page-inner">
+                <div class="delivery-section">
+                    <h3>Доставка</h3>
+                    <p>Доставка по Москве в пределах МКАД — от 2 часов</p>
+                    <p>Доставка за МКАД — от 4 часов</p>
+                    <p>Бесплатная доставка при заказе от 2500 рублей</p>
+                    <p>Самовывоз из магазина — бесплатно</p>
+                </div>
+                <div class="payment-section">
+                    <h3>Оплата</h3>
+                    <p>Онлайн-оплата банковской картой на сайте</p>
+                    <p>Наличными курьеру при получении или в магазине при самовывозе</p>
+                    <p>Оплата через СБП (Система быстрых платежей)</p>
+                    <p>Безналичный расчет для юридических лиц</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Админ панель -->
+<div id="adminPage" class="admin-page page" style="display: none;">
+    <div class="container">
+        <h2 style="margin-bottom: 24px;">Админ-панель</h2>
+        
+        <div class="admin-tabs">
+            <button class="admin-tab-btn active" data-tab="products">Товары</button>
+            <button class="admin-tab-btn" data-tab="orders">Заказы</button>
+        </div>
+        
+        <div id="adminProductsTab" class="admin-tab-content active-tab">
+            <div class="admin-panel">
+                <h3>Добавить новый товар</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="productName" placeholder="Название товара">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="productPrice" placeholder="Цена">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="productWeight" placeholder="Вес (граммы)" step="10">
+                    </div>
+                    <div class="form-group">
+                        <select id="productCategory">
+                            <option value="конфеты">Конфеты</option>
+                            <option value="наборы">Наборы</option>
+                            <option value="десерты">Десерты</option>
+                            <option value="печенье">Печенье</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="productImage" placeholder="URL изображения (images/products/название.jpg)">
+                </div>
+                <div class="form-group">
+                    <textarea id="productDescription" rows="3" placeholder="Описание товара"></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; display: block;">Состав товара</label>
+                    <textarea id="productComposition" rows="2" placeholder="Например: Мёд, грецкий орех, карамельная крошка, шоколад"></textarea>
+                </div>
+                <div class="feature-checkbox">
+                    <label><input type="checkbox" id="featureNew"> Новинка</label>
+                    <label><input type="checkbox" id="featureHit"> Хит</label>
+                    <label><input type="checkbox" id="featureGift"> Подарочный</label>
+                    <label><input type="checkbox" id="featureDiet"> Диетический</label>
+                </div>
+                <button id="addProductBtn" class="add-product-btn">Добавить товар</button>
+            </div>
+            
+            <div class="admin-panel">
+                <h3>Все товары</h3>
+                <div id="allProductsList" class="admin-products-list"></div>
+            </div>
+        </div>
+        
+        <div id="adminOrdersTab" class="admin-tab-content">
+            <div class="admin-panel">
+                <div class="order-status-filters">
+                    <button class="order-status-filter active" data-status="all">Все заказы</button>
+                    <button class="order-status-filter" data-status="новый">Новые</button>
+                    <button class="order-status-filter" data-status="доставлен">Доставленные</button>
+                    <button class="order-status-filter" data-status="отменен">Отмененные</button>
+                </div>
+                <div id="ordersList" class="orders-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна -->
+<div id="fullscreenProductModal" class="fullscreen-modal">
+    <div class="fullscreen-content">
+        <span class="fullscreen-close">&times;</span>
+        <div id="fullscreenDetailInner"></div>
+    </div>
+</div>
+
+<div id="authModal" class="auth-modal">
+    <div class="auth-modal-content">
+        <span class="auth-modal-close">&times;</span>
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">Вход</button>
+            <button class="auth-tab" data-tab="register">Регистрация</button>
+        </div>
+        <div id="authLoginPane" class="auth-pane active-pane">
+            <div class="input-group">
+                <input type="email" id="loginEmail" placeholder="Email">
+            </div>
+            <div class="input-group">
+                <input type="password" id="loginPassword" placeholder="Пароль">
+            </div>
+            <button id="doLoginBtn" class="submit-auth-btn">Войти</button>
+        </div>
+        <div id="authRegisterPane" class="auth-pane">
+            <div class="input-group">
+                <input type="text" id="regName" placeholder="Имя">
+            </div>
+            <div class="input-group">
+                <input type="email" id="regEmail" placeholder="Email">
+            </div>
+            <div class="input-group">
+                <input type="password" id="regPassword" placeholder="Пароль (минимум 6 символов)">
+            </div>
+            <button id="doRegisterBtn" class="submit-auth-btn">Зарегистрироваться</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Каталог продукции</h4>
+                <a class="footer-category-link" data-category="конфеты">Конфеты</a>
+                <a class="footer-category-link" data-category="наборы">Наборы</a>
+                <a class="footer-category-link" data-category="десерты">Десерты</a>
+                <a class="footer-category-link" data-category="печенье">Печенье</a>
+            </div>
+            <div class="footer-col">
+                <h4>Информация</h4>
+                <a class="footer-link" data-page="about">О компании</a>
+                <a class="footer-link" data-page="delivery">Доставка и оплата</a>
+            </div>
+            <div class="footer-col">
+                <h4>Контакты</h4>
+                <span>+7 (495) 123-45-67</span>
+                <span>info@sweetray.ru</span>
+                <p>г. Москва, ул. Сладкая, 15</p>
+            </div>
+        </div>
+        <div class="footer-bottom">© 2026 Сладкий рай — премиальные сладости ручной работы</div>
+    </div>
+</footer>
+
+<!-- Модальное окно редактирования товара -->
+<div id="editProductModal" class="auth-modal">
+    <div class="auth-modal-content" style="max-width: 600px;">
+        <span class="auth-modal-close" id="closeEditModal">&times;</span>
+        <h3 style="margin-bottom: 24px;">Редактирование товара</h3>
+        <input type="hidden" id="editProductId">
+        <div class="form-group">
+            <input type="text" id="editProductName" placeholder="Название товара">
+        </div>
+        <div class="form-group">
+            <input type="number" id="editProductPrice" placeholder="Цена">
+        </div>
+        <div class="form-group">
+            <input type="number" id="editProductWeight" placeholder="Вес (граммы)" step="10">
+        </div>
+        <div class="form-group">
+            <select id="editProductCategory">
+                <option value="конфеты">Конфеты</option>
+                <option value="наборы">Наборы</option>
+                <option value="десерты">Десерты</option>
+                <option value="печенье">Печенье</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <input type="text" id="editProductImage" placeholder="URL изображения">
+        </div>
+        <div class="form-group">
+            <textarea id="editProductDescription" rows="3" placeholder="Описание товара"></textarea>
+        </div>
+        <div class="form-group">
+            <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; display: block;">Состав товара</label>
+            <textarea id="editProductComposition" rows="2" placeholder="Например: Мёд, грецкий орех, карамельная крошка, шоколад"></textarea>
+        </div>
+        <div class="feature-checkbox">
+            <label><input type="checkbox" id="editFeatureNew"> Новинка</label>
+            <label><input type="checkbox" id="editFeatureHit"> Хит</label>
+            <label><input type="checkbox" id="editFeatureGift"> Подарочный</label>
+            <label><input type="checkbox" id="editFeatureDiet"> Диетический</label>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button id="saveEditBtn" class="submit-order-btn" style="flex: 1;">Сохранить изменения</button>
+            <button id="cancelEditBtn" class="add-product-btn" style="background: #6c757d; flex: 1;">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
